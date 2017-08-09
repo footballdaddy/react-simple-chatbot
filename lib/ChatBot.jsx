@@ -57,6 +57,7 @@ class ChatBot extends Component {
     const defaultBotSettings = { delay: botDelay, avatar: botAvatar };
     const defaultUserSettings = { delay: userDelay, avatar: userAvatar };
     const defaultCustomSettings = { delay: customDelay };
+    const defaultCustomSettingsMessage = { delay: userDelay, avatar: userAvatar };
 
     for (let i = 0, len = this.props.steps.length; i < len; i += 1) {
       const step = this.props.steps[i];
@@ -64,10 +65,12 @@ class ChatBot extends Component {
 
       if (step.user) {
         settings = defaultUserSettings;
-      } else if (step.message || step.asMessage) {
+      } else if (step.message) {
         settings = defaultBotSettings;
       } else if (step.component) {
         settings = defaultCustomSettings;
+      } else if (step.asMessage) {
+        settings = defaultCustomSettingsMessage;
       }
 
       steps[step.id] = Object.assign(
