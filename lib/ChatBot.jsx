@@ -13,11 +13,7 @@ import FloatButton from './FloatButton';
 import Footer from './Footer';
 import Input from './Input';
 import SubmitButton from './SubmitButton';
-import {
-  ChatIcon,
-  CloseIcon,
-  SubmitIcon,
-} from './icons';
+import { ChatIcon, CloseIcon, SubmitIcon } from './icons';
 
 class ChatBot extends Component {
   /* istanbul ignore next */
@@ -41,7 +37,9 @@ class ChatBot extends Component {
     this.triggerNextStep = this.triggerNextStep.bind(this);
     this.onValueChange = this.onValueChange.bind(this);
     this.handleKeyPress = this.handleKeyPress.bind(this);
-    this.handleSubmitButton = this.handleSubmitButton.bind(this);
+    this.handleSubmitButton = this.handleSubmitButton.bind(
+      this,
+    );
   }
 
   componentWillMount() {
@@ -54,16 +52,32 @@ class ChatBot extends Component {
     } = this.props;
     const steps = {};
 
-    const defaultBotSettings = { delay: botDelay, avatar: botAvatar };
-    const defaultUserSettings = { delay: userDelay, avatar: userAvatar };
+    const defaultBotSettings = {
+      delay: botDelay,
+      avatar: botAvatar,
+    };
+    const defaultUserSettings = {
+      delay: userDelay,
+      avatar: userAvatar,
+    };
     const defaultCustomSettings = { delay: customDelay };
-    const defaultCustomSettingsMessage = { delay: userDelay, avatar: userAvatar };
+    const defaultCustomSettingsMessage = {
+      delay: userDelay,
+      avatar: userAvatar,
+      userchat: true,
+    };
 
-    for (let i = 0, len = this.props.steps.length; i < len; i += 1) {
+    for (
+      let i = 0, len = this.props.steps.length;
+      i < len;
+      i += 1
+    ) {
       const step = this.props.steps[i];
       let settings = {};
 
-      if (step.user) {
+      if (step.userchat) {
+        settings = defaultCustomSettingsMessage;
+      } else if (step.user) {
         settings = defaultUserSettings;
       } else if (step.message) {
         settings = defaultBotSettings;
@@ -96,23 +110,32 @@ class ChatBot extends Component {
   }
 
   componentDidMount() {
-    this.content.addEventListener('DOMNodeInserted', this.onNodeInserted);
+    this.content.addEventListener(
+      'DOMNodeInserted',
+      this.onNodeInserted,
+    );
   }
 
   componentWillUpdate(nextProps, nextState) {
     const { opened } = nextProps;
 
-    if (opened !== undefined && opened !== nextState.opened) {
+    if (
+      opened !== undefined && opened !== nextState.opened
+    ) {
       this.setState({ opened });
     }
   }
 
   componentWillUnmount() {
-    this.content.removeEventListener('DOMNodeInserted', this.onNodeInserted);
+    this.content.removeEventListener(
+      'DOMNodeInserted',
+      this.onNodeInserted,
+    );
   }
 
   onNodeInserted(event) {
-    event.currentTarget.scrollTop = event.currentTarget.scrollHeight;
+    event.currentTarget.scrollTop =
+      event.currentTarget.scrollHeight;
   }
 
   onValueChange(event) {
@@ -139,7 +162,9 @@ class ChatBot extends Component {
     if (isEnd) {
       this.handleEnd();
     } else if (currentStep.options && data) {
-      const option = currentStep.options.filter(o => o.value === data.value)[0];
+      const option = currentStep.options.filter(
+        o => o.value === data.value,
+      )[0];
       delete currentStep.options;
 
       currentStep = Object.assign(
@@ -165,21 +190,33 @@ class ChatBot extends Component {
         previousSteps,
       });
     } else if (currentStep.trigger) {
-      const isReplace = currentStep.replace && !currentStep.option;
+      const isReplace =
+        currentStep.replace && !currentStep.option;
 
       if (isReplace) {
         renderedSteps.pop();
       }
 
-      let nextStep = Object.assign({}, steps[currentStep.trigger]);
+      let nextStep = Object.assign(
+        {},
+        steps[currentStep.trigger],
+      );
 
       if (nextStep.update) {
         const updateStep = nextStep;
-        nextStep = Object.assign({}, steps[updateStep.update]);
+        nextStep = Object.assign(
+          {},
+          steps[updateStep.update],
+        );
 
         if (nextStep.options) {
-          for (let i = 0, len = nextStep.options.length; i < len; i += 1) {
-            nextStep.options[i].trigger = updateStep.trigger;
+          for (
+            let i = 0, len = nextStep.options.length;
+            i < len;
+            i += 1
+          ) {
+            nextStep.options[i].trigger =
+              updateStep.trigger;
           }
         } else {
           nextStep.trigger = updateStep.trigger;
@@ -191,18 +228,21 @@ class ChatBot extends Component {
       previousStep = currentStep;
       currentStep = nextStep;
 
-      this.setState({ renderedSteps, currentStep, previousStep }, () => {
-        if (nextStep.user) {
-          this.setState({ disabled: false }, () => {
-            this.input.focus();
-          });
-        } else {
-          renderedSteps.push(nextStep);
-          previousSteps.push(nextStep);
+      this.setState(
+        { renderedSteps, currentStep, previousStep },
+        () => {
+          if (nextStep.user) {
+            this.setState({ disabled: false }, () => {
+              this.input.focus();
+            });
+          } else {
+            renderedSteps.push(nextStep);
+            previousSteps.push(nextStep);
 
-          this.setState({ renderedSteps, previousSteps });
-        }
-      });
+            this.setState({ renderedSteps, previousSteps });
+          }
+        },
+      );
     }
   }
 
@@ -216,29 +256,42 @@ class ChatBot extends Component {
 
     const steps = [];
 
-    for (let i = 0, len = previousSteps.length; i < len; i += 1) {
+    for (
+      let i = 0, len = previousSteps.length;
+      i < len;
+      i += 1
+    ) {
       const { id, message, value } = previousSteps[i];
       steps[id] = { id, message, value };
     }
 
-    const values = previousSteps.filter(step => step.value).map(step => step.value);
+    const values = previousSteps
+      .filter(step => step.value)
+      .map(step => step.value);
 
     if (this.props.handleEnd) {
-      this.props.handleEnd({ renderedSteps, steps, values });
+      this.props.handleEnd({
+        renderedSteps,
+        steps,
+        values,
+      });
     }
   }
 
   isLastPosition(step) {
     const { renderedSteps } = this.state;
     const length = renderedSteps.length;
-    const stepIndex = renderedSteps.map(s => s.key).indexOf(step.key);
+    const stepIndex = renderedSteps
+      .map(s => s.key)
+      .indexOf(step.key);
 
-    if (length <= 1 || (stepIndex + 1) === length) {
+    if (length <= 1 || stepIndex + 1 === length) {
       return true;
     }
 
     const nextStep = renderedSteps[stepIndex + 1];
-    const hasMessage = nextStep.message || nextStep.asMessage;
+    const hasMessage =
+      nextStep.message || nextStep.asMessage;
 
     if (!hasMessage) {
       return true;
@@ -250,14 +303,17 @@ class ChatBot extends Component {
 
   isFirstPosition(step) {
     const { renderedSteps } = this.state;
-    const stepIndex = renderedSteps.map(s => s.key).indexOf(step.key);
+    const stepIndex = renderedSteps
+      .map(s => s.key)
+      .indexOf(step.key);
 
     if (stepIndex === 0) {
       return true;
     }
 
     const lastStep = renderedSteps[stepIndex - 1];
-    const hasMessage = lastStep.message || lastStep.asMessage;
+    const hasMessage =
+      lastStep.message || lastStep.asMessage;
 
     if (!hasMessage) {
       return true;
@@ -286,7 +342,8 @@ class ChatBot extends Component {
     } = this.state;
     let { currentStep } = this.state;
 
-    const isInvalid = currentStep.validator && this.checkInvalidInput();
+    const isInvalid =
+      currentStep.validator && this.checkInvalidInput();
 
     if (!isInvalid) {
       const step = {
@@ -320,21 +377,27 @@ class ChatBot extends Component {
     const value = inputValue;
 
     if (typeof result !== 'boolean' || !result) {
-      this.setState({
-        inputValue: result.toString(),
-        inputInvalid: true,
-        disabled: true,
-      }, () => {
-        setTimeout(() => {
-          this.setState({
-            inputValue: value,
-            inputInvalid: false,
-            disabled: false,
-          }, () => {
-            this.input.focus();
-          });
-        }, 2000);
-      });
+      this.setState(
+        {
+          inputValue: result.toString(),
+          inputInvalid: true,
+          disabled: true,
+        },
+        () => {
+          setTimeout(() => {
+            this.setState(
+              {
+                inputValue: value,
+                inputInvalid: false,
+                disabled: false,
+              },
+              () => {
+                this.input.focus();
+              },
+            );
+          }, 2000);
+        },
+      );
 
       return true;
     }
@@ -369,10 +432,18 @@ class ChatBot extends Component {
     } = this.props;
     const { options, component, asMessage } = step;
     const steps = {};
-    const stepIndex = renderedSteps.map(s => s.id).indexOf(step.id);
-    const previousStep = stepIndex > 0 ? renderedSteps[stepIndex - 1] : {};
+    const stepIndex = renderedSteps
+      .map(s => s.id)
+      .indexOf(step.id);
+    const previousStep = stepIndex > 0
+      ? renderedSteps[stepIndex - 1]
+      : {};
 
-    for (let i = 0, len = previousSteps.length; i < len; i += 1) {
+    for (
+      let i = 0, len = previousSteps.length;
+      i < len;
+      i += 1
+    ) {
       const ps = previousSteps[i];
 
       steps[ps.id] = {
@@ -446,37 +517,33 @@ class ChatBot extends Component {
       submitButtonStyle,
     } = this.props;
 
-    const header = headerComponent || (
-      <Header
-        className="rsc-header"
-      >
+    const header =
+      headerComponent ||
+      <Header className="rsc-header">
         <HeaderTitle className="rsc-header-title">
           {headerTitle}
         </HeaderTitle>
-        {
-          floating &&
+        {floating &&
           <HeaderIcon
             className="rsc-header-close-button"
-            onClick={() => this.closeChatBot({ opened: false })}
+            onClick={() =>
+              this.closeChatBot({ opened: false })}
           >
             <CloseIcon />
-          </HeaderIcon>
-        }
-      </Header>
-    );
+          </HeaderIcon>}
+      </Header>;
 
     return (
       <div className={`rsc ${className}`}>
-        {
-          floating &&
+        {floating &&
           <FloatButton
             className="rsc-float-button"
             opened={opened}
-            onClick={() => this.openChatBot({ opened: true })}
+            onClick={() =>
+              this.openChatBot({ opened: true })}
           >
             <ChatIcon />
-          </FloatButton>
-        }
+          </FloatButton>}
         <ChatBotContainer
           className="rsc-container"
           floating={floating}
@@ -486,7 +553,8 @@ class ChatBot extends Component {
           {!hideHeader && header}
           <Content
             className="rsc-content"
-            innerRef={contentRef => this.content = contentRef}
+            innerRef={contentRef =>
+              this.content = contentRef}
             floating={floating}
             style={contentStyle}
           >
@@ -510,8 +578,7 @@ class ChatBot extends Component {
               disabled={disabled}
               hasButton={!hideSubmitButton}
             />
-            {
-              !hideSubmitButton &&
+            {!hideSubmitButton &&
               <SubmitButton
                 className="rsc-submit-button"
                 style={submitButtonStyle}
@@ -520,8 +587,7 @@ class ChatBot extends Component {
                 disabled={disabled}
               >
                 <SubmitIcon />
-              </SubmitButton>
-            }
+              </SubmitButton>}
           </Footer>
         </ChatBotContainer>
       </div>

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Bubble from './Bubble';
+import Username from './Username';
 import Image from './Image';
 import ImageContainer from './ImageContainer';
 import Loading from '../common/Loading';
@@ -16,6 +17,7 @@ class TextStep extends Component {
     };
 
     this.renderMessage = this.renderMessage.bind(this);
+    this.triggetNext = this.triggetNext.bind(this);
   }
 
   componentDidMount() {
@@ -24,11 +26,17 @@ class TextStep extends Component {
     const isComponentWatingUser = component && waitAction;
     setTimeout(() => {
       this.setState({ loading: false }, () => {
-        if (!isComponentWatingUser) {
-          this.props.triggerNextStep();
-        }
+        // if (!isComponentWatingUser) {
+        //   this.props.triggerNextStep();
+        // }
       });
     }, delay);
+  }
+
+  triggetNext() {
+    this.setState({ loading: false }, () => {
+      this.props.triggerNextStep();
+    });
   }
 
   renderMessage() {
@@ -37,7 +45,11 @@ class TextStep extends Component {
     let { message } = step;
 
     if (component) {
-      const { steps, previousStep, triggerNextStep } = this.props;
+      const {
+        steps,
+        previousStep,
+        triggerNextStep,
+      } = this.props;
       return React.cloneElement(component, {
         step,
         steps,
@@ -46,7 +58,10 @@ class TextStep extends Component {
       });
     }
 
-    message = message.replace(/{previousValue}/g, previousValue);
+    message = message.replace(
+      /{previousValue}/g,
+      previousValue,
+    );
 
     return message;
   }
@@ -61,48 +76,53 @@ class TextStep extends Component {
       hideBotAvatar,
       hideUserAvatar,
     } = this.props;
-    const {
-      avatar,
-      user,
-    } = step;
+    const { avatar, user, userchat, username } = step;
 
-    const showAvatar = user ? !hideUserAvatar : !hideBotAvatar;
+    const showAvatar =
+      user || userchat ? !hideUserAvatar : !hideBotAvatar;
 
     return (
       <TextStepContainer
         className="rsc-ts"
         user={user}
+        userchat={userchat}
       >
         <ImageContainer
           className="rsc-ts-image-container"
           user={user}
+          userchat={userchat}
         >
-          {
-            isFirst && showAvatar &&
+          {showAvatar &&
             <Image
               className="rsc-ts-image"
               style={avatarStyle}
               showAvatar={showAvatar}
               user={user}
+              userchat={userchat}
               src={avatar}
               alt="avatar"
-            />
-          }
+            />}
         </ImageContainer>
         <Bubble
           className="rsc-ts-bubble"
           style={bubbleStyle}
           user={user}
+          userchat={userchat}
           showAvatar={showAvatar}
-          isFirst={isFirst}
+          isFirst={true}
           isLast={isLast}
         >
-          {
-            this.state.loading &&
-            <Loading />
-          }
-          { !this.state.loading && this.renderMessage() }
+          {{ username } &&
+            <Username>
+              {username}
+            </Username>}
+          {this.state.loading && <Loading />}
+          {!this.state.loading && this.renderMessage()}
         </Bubble>
+        <button onClick={() => this.triggetNext()}>
+            Continue
+          </button>
+
       </TextStepContainer>
     );
   }
